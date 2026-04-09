@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finance Dashboard — API Docs</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #ffffff;
+      --bg-secondary: #f7f7f5;
+      --bg-tertiary: #f1efe8;
+      --text: #1a1a18;
+      --text-secondary: #5f5e5a;
+      --text-tertiary: #888780;
+      --border: rgba(0,0,0,0.12);
+      --border-md: rgba(0,0,0,0.20);
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1c1c1a;
+        --bg-secondary: #252523;
+        --bg-tertiary: #2c2c2a;
+        --text: #f0ede8;
+        --text-secondary: #a0a09a;
+        --text-tertiary: #666660;
+        --border: rgba(255,255,255,0.10);
+        --border-md: rgba(255,255,255,0.18);
+      }
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-tertiary);
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── Layout ── */
+    .page { display: flex; min-height: 100vh; }
+
+    .sidebar {
+      width: 220px;
+      min-width: 220px;
+      background: var(--bg);
+      border-right: 0.5px solid var(--border);
+      padding: 1.5rem 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .sidebar-logo {
+      padding: 0 1.25rem 1.25rem;
+      border-bottom: 0.5px solid var(--border);
+      margin-bottom: 1rem;
+    }
+
+    .sidebar-logo h2 {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .sidebar-logo p {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      margin-top: 2px;
+    }
+
+    .sidebar-section {
+      padding: 0 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .sidebar-section-title {
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-tertiary);
+      padding: 0 0.25rem;
+      margin-bottom: 4px;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 8px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .sidebar-link:hover { background: var(--bg-secondary); color: var(--text); }
+    .sidebar-link.active { background: var(--bg-secondary); color: var(--text); font-weight: 500; }
+
+    .main {
+      flex: 1;
+      padding: 2rem 2.5rem;
+      max-width: 780px;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .hero h1 { font-size: 22px; font-weight: 500; }
+    .hero p { font-size: 14px; color: var(--text-secondary); margin-top: 6px; line-height: 1.7; }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 1rem;
+    }
+
+    .chip {
+      font-size: 12px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      border: 0.5px solid var(--border);
+      color: var(--text-secondary);
+    }
+
+    /* ── Stats ── */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 2rem;
+    }
+
+    .stat {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+    }
+
+    .stat-n { font-size: 24px; font-weight: 500; }
+    .stat-l { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+    /* ── Section ── */
+    .section { margin-bottom: 2rem; }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-tertiary);
+      margin-bottom: 10px;
+    }
+
+    /* ── Endpoint ── */
+    .endpoint {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-md);
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+
+    .ep-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 16px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .ep-header:hover { background: var(--bg-secondary); }
+
+    .method {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: 20px;
+      min-width: 52px;
+      text-align: center;
+    }
+
+    .method.get    { background: #eaf3de; color: #3b6d11; }
+    .method.post   { background: #e6f1fb; color: #185fa5; }
+    .method.patch  { background: #faeeda; color: #854f0b; }
+    .method.delete { background: #fcebeb; color: #a32d2d; }
+
+    @media (prefers-color-scheme: dark) {
+      .method.get    { background: #173404; color: #c0dd97; }
+      .method.post   { background: #042c53; color: #b5d4f4; }
+      .method.patch  { background: #412402; color: #fac775; }
+      .method.delete { background: #501313; color: #f7c1c1; }
+    }
+
+    .ep-url {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .ep-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .role-pill {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      border: 0.5px solid var(--border);
+      color: var(--text-tertiary);
+      white-space: nowrap;
+    }
+
+    .chevron {
+      font-size: 10px;
+      color: var(--text-tertiary);
+      transition: transform 0.2s;
+    }
+
+    .chevron.open { transform: rotate(180deg); }
+
+    .ep-body {
+      display: none;
+      padding: 14px 16px;
+      border-top: 0.5px solid var(--border);
+      background: var(--bg-secondary);
+    }
+
+    .ep-body.open { display: block; }
+
+    .field-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 12px;
+      margin-bottom: 5px;
+    }
+
+    .field-label:first-child { margin-top: 0; }
+
+    .code-block {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      white-space: pre;
+      overflow-x: auto;
+      color: var(--text);
+      line-height: 1.75;
+    }
+
+    /* ── Base URL bar ── */
+    .base-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      margin-bottom: 2rem;
+    }
+
+    .base-bar span {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .base-bar code {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    /* ── Role table ── */
+    .role-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+
+    .role-table th {
+      background: var(--bg-secondary);
+      padding: 8px 12px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-tertiary);
+      border-bottom: 0.5px solid var(--border);
+    }
+
+    .role-table td {
+      padding: 8px 12px;
+      border-bottom: 0.5px solid var(--border);
+      color: var(--text-secondary);
+    }
+
+    .role-table tr:last-child td { border-bottom: none; }
+
+    .check { color: #3b6d11; font-size: 14px; }
+    .cross { color: #a32d2d; font-size: 14px; }
+
+    @media (prefers-color-scheme: dark) {
+      .check { color: #c0dd97; }
+      .cross { color: #f7c1c1; }
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 700px) {
+      .sidebar { display: none; }
+      .main { padding: 1.25rem; }
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .ep-desc { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <h2>Finance Dashboard</h2>
+      <p>API Documentation v1.0</p>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Getting Started</div>
+      <a class="sidebar-link" href="#overview">Overview</a>
+      <a class="sidebar-link" href="#roles">Roles & Access</a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Endpoints</div>
+      <a class="sidebar-link" href="#auth">Authentication</a>
+      <a class="sidebar-link" href="#dashboard">Dashboard</a>
+      <a class="sidebar-link" href="#records">Records</a>
+      <a class="sidebar-link" href="#users">Users</a>
+      <a class="sidebar-link" href="#errors">Errors</a>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <main class="main">
+
+    <!-- Hero -->
+    <div class="hero" id="overview">
+      <h1>Finance Dashboard API</h1>
+      <p>A REST API for financial record management with role-based access control. Built with Node.js, Express, and SQLite (sql.js). Supports JWT authentication, soft delete, pagination, and dashboard analytics.</p>
+      <div class="hero-meta">
+        <span class="chip">Node.js + Express</span>
+        <span class="chip">JWT Auth</span>
+        <span class="chip">SQLite</span>
+        <span class="chip">Role-Based Access</span>
+        <span class="chip">Soft Delete</span>
+        <span class="chip">Pagination</span>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat"><div class="stat-n">14</div><div class="stat-l">Endpoints</div></div>
+      <div class="stat"><div class="stat-n">3</div><div class="stat-l">User roles</div></div>
+      <div class="stat"><div class="stat-n">JWT</div><div class="stat-l">Auth method</div></div>
+      <div class="stat"><div class="stat-n">3000</div><div class="stat-l">Default port</div></div>
+    </div>
+
+    <!-- Base URL -->
+    <div class="base-bar">
+      <span>Base URL</span>
+      <code>http://localhost:3000/api</code>
+    </div>
+
+    <!-- Roles -->
+    <div class="section" id="roles">
+      <div class="section-title">Roles &amp; Access Control</div>
+      <table class="role-table">
+        <thead>
+          <tr>
+            <th>Action</th>
+            <th>Viewer</th>
+            <th>Analyst</th>
+            <th>Admin</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Login / view profile</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td>View financial records</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td>View dashboard summary</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td>View recent activity</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td>Create / update records</td><td class="cross">✗</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td>View category breakdown</td><td class="cross">✗</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td>View monthly / weekly trends</td><td class="cross">✗</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td>Delete records (soft)</td><td class="cross">✗</td><td class="cross">✗</td><td class="check">✓</td></tr>
+          <tr><td>Manage users (CRUD)</td><td class="cross">✗</td><td class="cross">✗</td><td class="check">✓</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Auth -->
+    <div class="section" id="auth">
+      <div class="section-title">Authentication</div>
+
+      <div class="endpoint">
+        <div class="ep-header" onclick="toggle(this)">
+          <span class="method post">POST</span>
+          <span class="ep-url">/auth/login</span>
+          <span class="ep-desc">Get JWT token</span>
+          <span class="role-pill">Public</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-label">Request body</div>
+          <div class="code-block">{
+  "email": "admin@example.com",
+  "password": "Password123!"
+}</div>
+          <div class="field-label">Response 200</div>
+          <div class="code-block">{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": "uuid-here",
+    "name": "Alice Admin",
+    "email": "admin@example.com",
+    "role": "admin"
+  }
+}</div>
+          <div class="field-label">Default seed users</div>
+          <div class="code-block">admin@example.com    password: Password123!  role: admin
+analyst@example.com  password: Password123!  role: analyst
+viewer@example.com   password: Password123!  role: viewer</div>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="ep-header" onclick="toggle(this)">
+          <span class="method get">GET</span>
+          <span class="ep-url">/auth/me</span>
+          <span class="ep-desc">Get current user</span>
+          <span class="role-pill">All roles</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-label">Headers</div>
+          <div class="code-block">Authorization: Bearer &lt;your_token&gt;</div>
+          <div class="field-label">Response 200</div>
+          <div class="code-block">{
+  "user": {
+    "id": "uuid-here",
+    "name": "Alice Admin",
+    "email": "admin@example.com",
+    "role": "admin",
+    "status": "active"
+  }
+}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="section" id="dashboard">
+      <div class="section-title">Dashboard</div>
+
+      <div class="endpoint">
+        <div class="ep-header" onclick="toggle(this)">
+          <span class="method get">GET</span>
+          <span class="ep-url">/dashboard/overview</span>
+          <span class="ep-desc">All-in-one dashboard data</span>
+          <span class="role-pill">All roles</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-label">Query params (optional)</div>
+          <div class="code-block">?startDate=2024-01-01&amp;endDate=2024-12-31</div>
+          <div class="field-label">Response 200</div>
+          <div class="code-block">{
+  "summary": {
+    "total_income": 45000,
+    "total_expenses": 32000,
+    "net_balance": 13000,
+    "total_records": 60
+  },
+  "category_breakdown": [...],
+  "monthly_trends": [...],
+  "recent_activity": [...]
+}</div>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="ep-header" onclick="toggle(this)">
+          <span class="method get">GET</span>
+          <span class="ep-url">/dashboard/summary</span>
+          <span class="ep-desc">Totals only</span>
+          <span class="role-pill">All roles</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-label">Query params (optional)</div>
+          <div class="code-block">?startDate=2024-01-01&amp;endDate=2024-12-31</div>
+          <div class="field-label">Response 200</div>
+          <div class="code-block">{
+  "summary": {
+    "total_income": 45000,
+    "total_expenses": 32000,
+    "net_balance": 13000,
+    "total_records": 60
+  }
+}</div>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="ep-header" onclick="toggle(this)">
+          <span class="method get">GET</span>
+          <span class="ep-url">/dashboard/recent</span>
+          <span class="ep-desc">Recent activity feed</span>
+          <span class="role-pill">All roles</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-label">Query params</div>
+          <div class="code-block">?limit=10   (max: 50, default: 10)</div>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="ep-header" onclick="toggle(this)">
+          <span class="method get">GET</span>
+          <span class="ep-url">/dashboard/categories</span>
+          <span class="ep-desc">Category-wise totals grouped by type</span>
+          <span class="role-pill">Analyst / Admin</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-label">Query params (optional)</div>
+          <div class="code-block">?type=income|expense
+?startDate=2024-01-01&amp;endDate=2024-12-31</div>
+          <div class="field-label">Response 200</div>
+          <div class="code-block">{
+  "breakdown": {
+    "income":  [{ "category": "Salary",  "total": 36000, "count": 12 }],
+    "expense": [{ "category": "Rent",    "total": 18000, "count": 6  }]
+  }
+}</div>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="ep-header" onclick="toggle(this)">
+          <span class="method get">GET</span>
+          <span class="ep-url">/dashboard/trends/monthly</span>
+          <span class="ep-desc">Monthly income / expense / net</span>
+          <span class="role-pill">Analyst / Admin</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-label">Query params</div>
+          <div class="code-block">?year=2024   (default: current year)</div>
+          <div class="field-label">Response 200</div>
+          <div class="code-block">{
+  "trends": [
+    { "month": "2024-01", "income": 3000, "expenses": 2200, "net": 800 },
+    { "month": "2024-02", "income": 3500, "expenses": 1800, "net": 1700 }
+  ],
+  "year": 2024
+}</div>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="ep-header" onclick="toggle(this)">
+          <span class="method get">GET</span>
+          <span class="ep-url">/dashboard/trends/weekly</span>
+          <span class="ep-desc">Last 12 weeks of trends</span>
+          <span class="role-pill">Analyst / Admin</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-label">Response 200</div>
+          <div class="code-block">{
+  "trends": [
+    { "week": "2024-W10", "income": 750, "expenses": 550, "net": 200 }
+  ]
+}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Records -->
+    <div class="section" id="records">
+      <div class="section-title">Financial Records</div>
+
+      <div class="endpoint">
+        <div class="ep-header" onclick="toggle(this)">
+          <span class="method get">GET</span>
+          <span class="ep-url">/records</span>
+          <span class="ep-desc">List records with filters &amp; pagination</span>
+          <span class="role-pill">All roles</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-label">Query params (all optional)</div>
+          <div class="code-block">?type=income|expense
+?category=Salary
+?startDate=2024-01-01
+?endDate=2024-12-31
+?page=1
+?limit=20   (max: 100)</div>
+          <div class="field-label">Response 200</div>
+          <div class="code-block">{
+  "records": [
+    {
+      "id": "uuid",
+      "amount": 5000,
+      "type": "income",
+      "category": "Salary",
+      "date": "2024-06-01",
+      "notes": "June salary",
+      "created_by": "user-uuid",
+      "created_by_name": "Bob Analyst",
+      "created_at": "2024-06-01T10:00:00"
+    }
+  ],
+  "total": 42,
+  "page": 1,
+  "limit": 20,
+  "pages": 3
+}</div>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="ep-header" onclick="toggle(this)">
+          <span class="method get">GET</span>
+          <span class="ep-url">/records/:id</span>
+          <span class="ep-desc">Get a single record by ID</span>
+          <span class="role-pill">All roles</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-label">Example</div>
+          <div class="code-block">GET /api/records/3f2a8c1d-4b5e-...</div>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="ep-header" onclick="toggle(this)">
+          <span class="method post">POST</span>
+          <span class="ep-url">/records</span>
+          <span class="ep-desc">Create a new record</span>
+          <span class="role-pill">Analyst / Admin</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-label">Request body</div>
+          <div class="code-block">{
+  "amount":   5000,
+  "type":     "income",
+  "category": "Salary",
+  "date":     "2024-06-01",
+  "notes":    "June salary"
+}</div>
+          <div class="field-label">Validation rules</div>
+          <div class="code-block">amount    required · positive number
+type      required · "income" or "expense"
+category  required · max 100 chars
+date      required · YYYY-MM-DD format
+notes     optional · max 500 chars</div>
+          <div class="field-label">Response 201</div>
+          <div class="code-block">{ "record": { ... } }</div>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="ep-header" onclick="toggle(this)">
+          <span class="method patch">PATCH</span>
+          <span class="ep-url">/records/:id</span>
+          <span class="ep-desc">Partially update a record</span>
+          <span class="role-pill">Analyst / Admin</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-label">Request body (provide any fields to update)</div>
+          <div class="code-block">{ "amount": 6000 }
+{ "category": "Bonus", "notes": "Q2 bonus" }
+{ "type": "income", "date": "2024-07-01" }</div>
+          <div class="field-label">Response 200</div>
+          <div class="code-block">{ "record": { ... updated record ... } }</div>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="ep-header" onclick="toggle(this)">
+          <span class="method delete">DELETE</span>
+          <span class="ep-url">/records/:id</span>
+          <span class="ep-desc">Soft delete a record</span>
+          <span class="role-pill">Admin only</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-label">Behaviour</div>
+          <div class="code-block">Sets deleted_at timestamp — record is hidden from all
+queries but preserved in the database for audit purposes.</div>
+          <div class="field-label">Response 200</div>
+          <div class="code-block">{ "message": "Record deleted successfully" }</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Users -->
+    <div class="section" id="users">
+      <div class="section-title">User Management</div>
+
+      <div class="endpoint">
+        <div class="ep-header" onclick="toggle(this)">
+          <span class="method get">GET</span>
+          <span class="ep-url">/users</span>
+          <span class="ep-desc">List all users with filters</span>
+          <span class="role-pill">Admin only</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-label">Query params (optional)</div>
+          <div class="code-block">?status=active|inactive
+?role=viewer|analyst|admin
+?page=1&amp;limit=20</div>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="ep-header" onclick="toggle(this)">
+          <span class="method get">GET</span>
+          <span class="ep-url">/users/:id</span>
+          <span class="ep-desc">Get a single user</span>
+          <span class="role-pill">Admin only</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-label">Response 200</div>
+          <div class="code-block">{ "user": { "id": "...", "name": "...", "email": "...", "role": "...", "status": "active" } }</div>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="ep-header" onclick="toggle(this)">
+          <span class="method post">POST</span>
+          <span class="ep-url">/users</span>
+          <span class="ep-desc">Create a new user</span>
+          <span class="role-pill">Admin only</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-label">Request body</div>
+          <div class="code-block">{
+  "name":     "John Doe",
+  "email":    "john@company.com",
+  "password": "SecurePass1!",
+  "role":     "viewer"
+}</div>
+          <div class="field-label">Roles</div>
+          <div class="code-block">viewer   read-only dashboard access
+analyst  read + create/update records + analytics
+admin    full access including user management</div>
+          <div class="field-label">Response 201</div>
+          <div class="code-block">{ "user": { "id": "...", "name": "John Doe", "role": "viewer" } }</div>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="ep-header" onclick="toggle(this)">
+          <span class="method patch">PATCH</span>
+          <span class="ep-url">/users/:id</span>
+          <span class="ep-desc">Update name, role, or status</span>
+          <span class="role-pill">Admin only</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-label">Updatable fields</div>
+          <div class="code-block">{ "name": "New Name" }
+{ "role": "analyst" }
+{ "status": "inactive" }</div>
+          <div class="field-label">Guard rules</div>
+          <div class="code-block">Admin cannot deactivate their own account.
+Admin cannot delete their own account.</div>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="ep-header" onclick="toggle(this)">
+          <span class="method delete">DELETE</span>
+          <span class="ep-url">/users/:id</span>
+          <span class="ep-desc">Hard delete a user</span>
+          <span class="role-pill">Admin only</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-label">Response 200</div>
+          <div class="code-block">{ "message": "User deleted successfully" }</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Errors -->
+    <div class="section" id="errors">
+      <div class="section-title">Error Responses</div>
+      <div class="endpoint">
+        <div class="ep-header" onclick="toggle(this)">
+          <span class="ep-url" style="font-family:var(--font-sans);font-size:13px;color:var(--text)">Status codes &amp; error format</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="code-block">200  OK           Success
+201  Created      Resource created
+400  Bad Request  Validation failed
+     { "error": "Validation failed",
+       "details": [{ "field": "amount", "message": "Amount must be positive" }] }
+401  Unauthorized Missing or invalid token
+     { "error": "Missing or invalid authorization header" }
+403  Forbidden    Insufficient role
+     { "error": "Access denied. Required role: analyst. Your role: viewer" }
+404  Not Found    Resource does not exist
+     { "error": "Record not found" }
+409  Conflict     Duplicate resource
+     { "error": "Email is already in use" }
+500  Server Error Unexpected error
+     { "error": "Internal server error" }</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  function toggle(header) {
+    const body = header.nextElementSibling;
+    const chevron = header.querySelector('.chevron');
+    const isOpen = body.classList.contains('open');
+    body.classList.toggle('open', !isOpen);
+    chevron.classList.toggle('open', !isOpen);
+  }
+
+  // Highlight active sidebar link on scroll
+  const sections = document.querySelectorAll('[id]');
+  const links = document.querySelectorAll('.sidebar-link');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 80) current = s.id;
+    });
+    links.forEach(l => {
+      l.classList.toggle('active', l.getAttribute('href') === '#' + current);
+    });
+  });
+</script>
+</body>
+</html>
