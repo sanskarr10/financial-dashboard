@@ -39,7 +39,7 @@ def create_user(body: CreateUserRequest, _=AdminOnly):
         raise HTTPException(status_code=409, detail="Email is already in use")
     user = user_model.create_user(
         name=body.name, email=body.email,
-        password=body.password, role=body.role,
+        password=body.password[:72], role=body.role,
     )
     return {"user": user}
 
