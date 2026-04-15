@@ -1,9 +1,0 @@
-services:
-  - type: web
-    name: finance-dashboard-api
-    env: python
-    buildCommand: pip install -r requirements.txt && python seed.py
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
-    envVars:
-      - key: JWT_SECRET
-        value: your-super-secret-key-change-this
